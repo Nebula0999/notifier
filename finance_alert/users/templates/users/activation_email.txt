@@ -1,0 +1,7 @@
+Hello {{ user.username }},
+
+Please click the link below to activate your account:
+
+{{ activation_link }}
+
+If you didn't sign up, you can ignore this message.

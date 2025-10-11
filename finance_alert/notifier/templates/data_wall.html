@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Photo Grid</title>
+    <style>
+      /* Navbar styles */
+      nav {
+        background-color: #333;
+        color: white;
+        padding: 12px;
+        text-align: center;
+      }
+ 
+      .logo {
+        height: 24px;
+      }
+ 
+      /* Container and grid styles */
+      .container {
+        max-width: 1200px;
+        margin: auto;
+        padding: 20px;
+      }
+ 
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+ 
+      /* Photo card styles */
+      .photo-card {
+        height: 300px;
+        position: relative;
+        overflow: hidden;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+ 
+      .photo-card img {
+        object-fit: cover;
+        width: 100%;
+        height: 100%;
+      }
+ 
+      /* Photo details overlay */
+      .photo-details {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: rgba(0, 0, 0, 0.6);
+        color: white;
+        padding: 12px;
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+ 
+      .photo-card:hover .photo-details {
+        opacity: 1;
+      }
+    </style>
+  </head>
+ 
+  <body>
+    <!-- Photo grid -->
+    <div class="container">
+      <div class="grid">
+        {% for photo in photos %}
+        <div class="photo-card">
+          <a href="{{ photo.url }}" target="_blank">
+            {# Use the server-side proxy to fetch images to avoid CORS/mixed-content issues #}
+            <img src="{% url 'proxy-image' %}?url={{ photo.url|urlencode }}" alt="{{ photo.title }}" />
+            <div class="photo-details">
+              <h4>{{ photo.title }}</h4>
+              <p>{{ photo.description }}</p>
+            </div>
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </body>
+</html>
