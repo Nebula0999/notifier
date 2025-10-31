@@ -296,9 +296,42 @@ ALLOWED_HOSTS = ['yourdomain.com', 'www.yourdomain.com']
   - python-dotenv
   - psycopg2
 
+## ⏰ Automated Daily Reminders
+
+The system includes automated scheduled reminders at 8 PM and 9 PM daily.
+
+### Setup (Windows Task Scheduler)
+
+**Quick Setup:**
+```powershell
+cd "C:\Users\Allan N\OneDrive\Desktop\python_introduction\notifier"
+Register-ScheduledTask -Xml (Get-Content task_8pm.xml | Out-String) -TaskName "Daily Reminders 8PM"
+Register-ScheduledTask -Xml (Get-Content task_9pm.xml | Out-String) -TaskName "Daily Reminders 9PM"
+```
+
+**Manual Testing:**
+```bash
+python manage.py send_daily_reminders --dry-run
+python manage.py send_daily_reminders --only Allan --override-email "test@example.com"
+```
+
+**View Reminder Logs:**
+- Web UI: `http://localhost:8000/reminder-logs/`
+- Django Admin: Admin panel → Reminder Logs
+- File: `reminder_execution.log`
+
+### Features
+- ✅ Sends personalized balance summaries to each member
+- ✅ Logs every send attempt (success/failure) to database
+- ✅ No email addresses stored (data protection)
+- ✅ Group summary included in each email
+- ✅ Configurable member emails via environment variables
+- ✅ Automatic retry if network available
+
+For detailed scheduler setup, see `SCHEDULER_SETUP.md`
+
 ## 🔄 Future Enhancements
 
-- [ ] Celery for background task processing
 - [ ] SMS notifications via Twilio
 - [ ] Slack integration for alerts
 - [ ] Dashboard with financial data charts
