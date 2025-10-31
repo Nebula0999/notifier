@@ -252,34 +252,53 @@ Run: `python manage.py migrate sites`
 - Verify Google Sheet image URLs are public or accessible
 - Check browser console for errors
 
-## 🚀 Deployment Considerations
+## 🚀 Deployment to Render
 
-### Environment Variables
-- Use a secret manager (AWS Secrets Manager, Azure Key Vault, etc.)
-- Never commit `.env` to version control
-- Rotate secrets regularly
+This project is ready for deployment to Render's free tier!
 
-### Database
-- Use managed PostgreSQL (AWS RDS, Azure Database, etc.)
-- Set up regular backups
-- Use connection pooling
+### Quick Deploy
 
-### Static Files
+1. **Push to GitHub:**
 ```bash
-python manage.py collectstatic
+git add .
+git commit -m "Deploy to Render"
+git push
 ```
-Serve with nginx or CDN in production
 
-### HTTPS
-- Required for production
-- Use Let's Encrypt or cloud provider SSL
-- Update SITE_ID domain to use https://
+2. **Deploy on Render:**
+   - Go to [render.com](https://render.com) and sign up
+   - Click "New +" → "Blueprint"
+   - Connect repository: `Nebula0999/notifier`
+   - Click "Apply" - Render will use `render.yaml`
 
-### ALLOWED_HOSTS
-Update in production:
-```python
-ALLOWED_HOSTS = ['yourdomain.com', 'www.yourdomain.com']
-```
+3. **Configure Environment Variables:**
+   - Add Google Sheets credentials
+   - Add email SMTP settings
+   - Update `ALLOWED_HOSTS` with your Render URL
+
+4. **Update Django Site:**
+   - Visit `/admin/` and update Site domain
+
+**Full deployment guide:** See `RENDER_DEPLOYMENT.md`
+
+### Production Features
+
+✅ Gunicorn WSGI server
+✅ WhiteNoise for static files
+✅ PostgreSQL database (Render-provided)
+✅ SSL/HTTPS enabled by default
+✅ Security headers configured
+✅ Environment-based settings
+✅ Auto-migrations on deploy
+✅ Static files auto-collected
+
+### Files for Deployment
+
+- `requirements.txt` - Python dependencies
+- `build.sh` - Render build script
+- `render.yaml` - Render configuration
+- `.python-version` - Python version specification
+- `.env.example` - Environment variable template
 
 ## 📚 Tech Stack
 
