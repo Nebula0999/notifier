@@ -1,0 +1,25 @@
+# Core Django
+Django==5.1.7
+python-dotenv==1.0.0
+
+# Database
+psycopg2-binary==2.9.9
+dj-database-url==2.1.0
+
+# Web Server for Production
+gunicorn==21.2.0
+
+# Static Files
+whitenoise==6.6.0
+
+# Google Sheets Integration
+gspread==6.0.0
+google-auth==2.27.0
+google-auth-oauthlib==1.2.0
+google-auth-httplib2==0.2.0
+
+# HTTP Requests
+requests==2.31.0
+
+# Environment Variables
+django-environ==0.11.2
