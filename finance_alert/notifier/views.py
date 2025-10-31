@@ -1,9 +1,13 @@
 from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from django.core.management import call_command
 from django.contrib.auth.decorators import login_required
 from .services import get_all_rows
 from .models import ReminderLog
 import requests
+import os
  
 def data_wall(request):
   """Display group contribution tracker from Google Sheets.
@@ -124,3 +128,33 @@ def reminder_logs(request):
     'logs': logs,
     'member_stats': member_stats
   })
+
+
+@csrf_exempt
+@require_http_methods(["POST", "GET"])  # allow GET for simple external schedulers
+def trigger_reminders(request):
+  """
+  Secure endpoint to trigger daily reminders from an external scheduler.
+  Provide the token via ?key=... or header X-Reminder-Key.
+  """
+  provided = request.GET.get('key') or request.headers.get('X-Reminder-Key')
+  expected = os.getenv('REMINDER_CRON_KEY')
+  if not expected:
+    return JsonResponse({'ok': False, 'error': 'Server not configured with REMINDER_CRON_KEY'}, status=500)
+  if provided != expected:
+    return JsonResponse({'ok': False, 'error': 'Unauthorized'}, status=401)
+
+  dry_run = request.GET.get('dry', '').lower() in ('1', 'true', 'yes')
+  only = request.GET.get('only')  # e.g., "Allan" or "Allan,Blessing"
+  args = []
+  kwargs = {}
+  if dry_run:
+    args.append('--dry-run')
+  if only:
+    args.extend(['--only', *[m.strip() for m in only.split(',') if m.strip()]])
+
+  try:
+    call_command('send_daily_reminders', *args, **kwargs)
+    return JsonResponse({'ok': True})
+  except Exception as e:
+    return JsonResponse({'ok': False, 'error': str(e)}, status=500)
