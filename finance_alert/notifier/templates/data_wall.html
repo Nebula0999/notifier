@@ -1,85 +1,115 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Photo Grid</title>
-    <style>
-      /* Navbar styles */
-      nav {
-        background-color: #333;
-        color: white;
-        padding: 12px;
-        text-align: center;
-      }
- 
-      .logo {
-        height: 24px;
-      }
- 
-      /* Container and grid styles */
-      .container {
-        max-width: 1200px;
-        margin: auto;
-        padding: 20px;
-      }
- 
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-      }
- 
-      /* Photo card styles */
-      .photo-card {
-        height: 300px;
-        position: relative;
-        overflow: hidden;
-        border-radius: 12px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      }
- 
-      .photo-card img {
-        object-fit: cover;
-        width: 100%;
-        height: 100%;
-      }
- 
-      /* Photo details overlay */
-      .photo-details {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background-color: rgba(0, 0, 0, 0.6);
-        color: white;
-        padding: 12px;
-        opacity: 0;
-        transition: opacity 0.3s;
-      }
- 
-      .photo-card:hover .photo-details {
-        opacity: 1;
-      }
-    </style>
-  </head>
- 
-  <body>
-    <!-- Photo grid -->
-    <div class="container">
-      <div class="grid">
-        {% for photo in photos %}
-        <div class="photo-card">
-          <a href="{{ photo.url }}" target="_blank">
-            {# Use the server-side proxy to fetch images to avoid CORS/mixed-content issues #}
-            <img src="{% url 'proxy-image' %}?url={{ photo.url|urlencode }}" alt="{{ photo.title }}" />
-            <div class="photo-details">
-              <h4>{{ photo.title }}</h4>
-              <p>{{ photo.description }}</p>
-            </div>
-          </a>
+{% extends 'layout/base.html' %}
+{% block title %}Money Mates Tracker{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1>💰 Money Mates Contribution Tracker</h1>
+      <a href="{% url 'reminder-logs' %}" class="btn btn-outline-primary">📧 View Reminder Logs</a>
+    </div>
+    
+    <!-- Summary Cards -->
+    {% if summary %}
+    <div class="row mb-4">
+      {% for member, data in summary.items %}
+      <div class="col-md-3 mb-3">
+        <div class="card {% if '-' in data.balance %}border-danger{% else %}border-success{% endif %}">
+          <div class="card-body">
+            <h5 class="card-title text-capitalize">{{ member }}</h5>
+            <p class="card-text">
+              <strong>Balance:</strong> 
+              <span class="{% if '-' in data.balance %}text-danger{% else %}text-success{% endif %} fs-5">
+                {{ data.balance }}
+              </span>
+            </p>
+            <p class="card-text mb-0">
+              <small class="text-muted">Total: {{ data.total_contributed }}</small><br>
+              <small class="text-muted">Days: {{ data.days_contributed }}</small>
+            </p>
+          </div>
         </div>
-        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Daily Contributions Table -->
+    {% if contributions %}
+    <div class="card">
+      <div class="card-header bg-dark text-white">
+        <h5 class="mb-0">Daily Contribution Log</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-sm table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>Date</th>
+                <th>Sultan</th>
+                <th>Blessing</th>
+                <th>Cynthia</th>
+                <th>Allan</th>
+                <th class="table-info">Sultan Balance</th>
+                <th class="table-info">Blessing Balance</th>
+                <th class="table-info">Cynthia Balance</th>
+                <th class="table-info">Allan Balance</th>
+                <th>Challenge</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in contributions %}
+              <tr>
+                <td><strong>{{ row.Date|default:"N/A" }}</strong></td>
+                <!-- Contributions -->
+                <td class="{% if row.sultan == '-' %}text-danger{% elif '+' in row.sultan %}text-success{% endif %}">
+                  {{ row.sultan|default:"-" }}
+                </td>
+                <td class="{% if row.Blessing == '-' %}text-danger{% elif '+' in row.Blessing %}text-success{% endif %}">
+                  {{ row.Blessing|default:"-" }}
+                </td>
+                <td class="{% if row.cynthia == '-' %}text-danger{% elif '+' in row.cynthia %}text-success{% endif %}">
+                  {{ row.cynthia|default:"-" }}
+                </td>
+                <td class="{% if row.Allan == '-' %}text-danger{% elif '+' in row.Allan %}text-success{% endif %}">
+                  {{ row.Allan|default:"-" }}
+                </td>
+                <!-- Running Balances -->
+                <td class="table-info {% if '-' in row.sultan_running %}text-danger fw-bold{% else %}text-success{% endif %}">
+                  {{ row.sultan_running|default:"0" }}
+                </td>
+                <td class="table-info {% if '-' in row.blessing_running %}text-danger fw-bold{% else %}text-success{% endif %}">
+                  {{ row.blessing_running|default:"0" }}
+                </td>
+                <td class="table-info {% if '-' in row.cynthia_running %}text-danger fw-bold{% else %}text-success{% endif %}">
+                  {{ row.cynthia_running|default:"0" }}
+                </td>
+                <td class="table-info {% if '-' in row.Allan_running %}text-danger fw-bold{% else %}text-success{% endif %}">
+                  {{ row.Allan_running|default:"0" }}
+                </td>
+                <td>{{ row.challenge|default:"" }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <p class="text-muted mt-3">
+          <i class="bi bi-info-circle"></i> Total entries: {{ contributions|length }} | 
+          <span class="text-danger">-</span> No contribution | 
+          <span class="text-success">+</span> Contribution made
+        </p>
       </div>
     </div>
-  </body>
-</html>
+    {% else %}
+    <div class="alert alert-warning">
+      <h4 class="alert-heading">No contribution data available</h4>
+      <p>No records were found. Please check:</p>
+      <ul>
+        <li>The sheet name is "money mates tracker" and tab is "daily log"</li>
+        <li>The sheet has data rows with proper headers</li>
+        <li>The service account has access to the sheet</li>
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

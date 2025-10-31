@@ -48,10 +48,15 @@ def _get_gspread_client() -> gspread.client.Client:
   return _GSPREAD_CLIENT
 
 
-def get_all_rows(doc_name: str, sheet_name: str = None) -> List[dict]:
+def get_all_rows(doc_name: str, sheet_name: str = None, expected_headers: List[str] = None) -> List[dict]:
   """
   Fetches all rows from a given Google Sheet worksheet and returns a list
   of dictionaries using the first row as headers.
+  
+  Args:
+    doc_name: Name of the Google Sheet document
+    sheet_name: Name of the worksheet tab (optional, defaults to first sheet)
+    expected_headers: List of expected column headers to handle duplicates (optional)
   """
   client = _get_gspread_client()
   sh = client.open(doc_name)
@@ -60,4 +65,9 @@ def get_all_rows(doc_name: str, sheet_name: str = None) -> List[dict]:
     worksheet = sh.worksheet(sheet_name)
   else:
     worksheet = sh.get_worksheet(0)
-  return worksheet.get_all_records()
+  
+  # If expected headers provided, use them to handle duplicates
+  if expected_headers:
+    return worksheet.get_all_records(expected_headers=expected_headers)
+  else:
+    return worksheet.get_all_records()
