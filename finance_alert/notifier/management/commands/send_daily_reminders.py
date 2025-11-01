@@ -155,22 +155,40 @@ Last Updated: {data['date']}
                     self.stdout.write('-' * 60)
                 else:
                     try:
-                        send_mail(
+                        # Check if we're using console backend (dev mode)
+                        using_console = 'console' in settings.EMAIL_BACKEND.lower()
+                        
+                        num_sent = send_mail(
                             subject,
                             message,
                             settings.DEFAULT_FROM_EMAIL,
                             [target_email],
                             fail_silently=False,
                         )
-                        emails_sent += 1
-                        self.stdout.write(self.style.SUCCESS(f'✓ Sent reminder to {member} at {target_email}'))
                         
-                        # Log successful send (no email address stored)
-                        ReminderLog.objects.create(
-                            member_name=member,
-                            status='success',
-                            balance_shown=balance
-                        )
+                        if using_console:
+                            self.stdout.write(
+                                self.style.WARNING(
+                                    f'⚠️ Email printed to console (not sent) for {member} - '
+                                    f'Set EMAIL_BACKEND to smtp in .env to actually send'
+                                )
+                            )
+                            # Don't log as success if using console backend
+                        elif num_sent > 0:
+                            emails_sent += 1
+                            self.stdout.write(self.style.SUCCESS(f'✓ Sent reminder to {member} at {target_email}'))
+                            
+                            # Log successful send (no email address stored)
+                            ReminderLog.objects.create(
+                                member_name=member,
+                                status='success',
+                                balance_shown=balance
+                            )
+                        else:
+                            self.stdout.write(
+                                self.style.WARNING(f'⚠️ send_mail returned 0 for {member} (email may not have been sent)')
+                            )
+                            
                     except Exception as e:
                         error_msg = str(e)
                         self.stdout.write(
