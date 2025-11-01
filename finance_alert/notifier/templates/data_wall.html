@@ -1,5 +1,35 @@
 {% extends 'layout/base.html' %}
-{% block title %}Money Mates Tracker{% endblock %}
+
+{% block title %}Money Mates Tracker - View Group Contributions & Balances{% endblock %}
+{% block meta_title %}Money Mates Tracker - Real-Time Group Finance Dashboard{% endblock %}
+{% block meta_description %}Track daily contributions, view running balances, and monitor your group's financial progress. Real-time updates from Google Sheets for Sultan, Blessing, Cynthia, and Allan.{% endblock %}
+{% block meta_keywords %}contribution tracker, group finance, daily contributions, running balance, money mates, finance dashboard, savings tracker{% endblock %}
+
+{% block og_title %}Money Mates - Live Contribution Tracker{% endblock %}
+{% block og_description %}Real-time tracking of group contributions and balances. Stay up-to-date with your savings group's financial progress.{% endblock %}
+
+{% block extra_head %}
+<!-- Structured Data for Dashboard -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Contribution Tracker Dashboard",
+  "description": "View real-time group contributions and running balances",
+  "url": "{{ request.build_absolute_uri }}",
+  "breadcrumb": {
+    "@type": "BreadcrumbList",
+    "itemListElement": [{
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "{{ request.scheme }}://{{ request.get_host }}"
+    }]
+  }
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="row">
   <div class="col-12">

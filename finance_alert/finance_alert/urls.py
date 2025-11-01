@@ -17,15 +17,26 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
+from django.contrib.sitemaps.views import sitemap
+from notifier.sitemaps import StaticViewSitemap
+from django.views.generic import TemplateView
 
 
 def healthz(_request):
     """Lightweight health check endpoint for Render."""
     return JsonResponse({"ok": True})
 
+
+# Sitemap configuration
+sitemaps = {
+    'static': StaticViewSitemap,
+}
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('notifier.urls')),
     path('users/', include('users.urls', namespace='users')),
     path('healthz/', healthz),
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
+    path('robots.txt', TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),
 ]

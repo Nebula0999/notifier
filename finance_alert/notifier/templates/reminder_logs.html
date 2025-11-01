@@ -1,6 +1,40 @@
 {% extends "layout/base.html" %}
 
-{% block title %}Reminder Logs{% endblock %}
+{% block title %}Reminder Logs - Email History & Statistics{% endblock %}
+{% block meta_title %}Reminder Logs - Track Email Notifications & Delivery Status{% endblock %}
+{% block meta_description %}View reminder email history, delivery statistics, and member notification status. Monitor automated daily reminders sent to your savings group.{% endblock %}
+{% block meta_keywords %}reminder logs, email history, notification status, delivery tracking, email statistics{% endblock %}
+{% block meta_robots %}noindex, nofollow{% endblock %}
+
+{% block og_title %}Reminder Logs - Email History{% endblock %}
+{% block og_description %}Track reminder email delivery status and view notification history for your group.{% endblock %}
+
+{% block extra_head %}
+<!-- Structured Data for Logs Page -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Reminder Logs",
+  "description": "Email reminder history and delivery statistics",
+  "url": "{{ request.build_absolute_uri }}",
+  "breadcrumb": {
+    "@type": "BreadcrumbList",
+    "itemListElement": [{
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "{{ request.scheme }}://{{ request.get_host }}"
+    }, {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Reminder Logs",
+      "item": "{{ request.build_absolute_uri }}"
+    }]
+  }
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <div class="container mt-4">

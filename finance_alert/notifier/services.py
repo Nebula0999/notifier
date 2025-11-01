@@ -48,6 +48,11 @@ def _get_gspread_client() -> gspread.client.Client:
   global _GSPREAD_CLIENT
   if _GSPREAD_CLIENT is None:
     creds = _build_credentials_dict()
+    if not creds.get('private_key') or not creds.get('client_email'):
+      raise RuntimeError(
+        "Google Sheets credentials not configured. "
+        "Set PRIVATE_KEY, CLIENT_EMAIL, and other env vars."
+      )
     # gspread provides a helper that accepts a dict with service account
     # credentials.
     _GSPREAD_CLIENT = gspread.service_account_from_dict(creds)

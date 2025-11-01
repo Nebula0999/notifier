@@ -22,11 +22,18 @@ def data_wall(request):
     'cynthia running', 'Allan running'
   ]
   
-  contributions = get_all_rows(
-    "money mates tracker", 
-    "daily log",
-    expected_headers=expected_headers
-  )
+  try:
+    contributions = get_all_rows(
+      "money mates tracker", 
+      "daily log",
+      expected_headers=expected_headers
+    )
+  except Exception as e:
+    # If Google Sheets is unreachable/misconfigured, show a friendly error
+    # instead of crashing the worker
+    contributions = []
+    from django.contrib import messages
+    messages.warning(request, f"Could not load data from Google Sheets: {e}")
   
   # Calculate summary statistics for each member
   members = ['sultan', 'Blessing', 'cynthia', 'Allan']
