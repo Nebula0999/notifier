@@ -23,4 +23,3 @@ requests==2.31.0
 
 # Environment Variables
 django-environ==0.11.2
-psycopg2==2.9.9

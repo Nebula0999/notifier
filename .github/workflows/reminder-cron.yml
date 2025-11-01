@@ -1,0 +1,24 @@
+name: Daily reminder triggers
+
+on:
+  schedule:
+    # 20:00 Africa/Nairobi == 17:00 UTC
+    - cron: '0 17 * * *'
+    # 21:00 Africa/Nairobi == 18:00 UTC
+    - cron: '0 18 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  ping-endpoint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger reminders (dry run optional)
+        run: |
+          CRON_URL="${{ secrets.REMINDER_CRON_URL }}"
+          if [ -z "$CRON_URL" ]; then
+            echo "Missing REMINDER_CRON_URL secret. Set it to your full endpoint incl. token, e.g. https://<host>/cron/send-reminders/?key=<TOKEN>" >&2
+            exit 1
+          fi
+          # Wake and trigger the endpoint
+          echo "Hitting $CRON_URL"
+          curl -sS --max-time 120 --retry 2 --retry-delay 3 "$CRON_URL" | tee /dev/stderr
