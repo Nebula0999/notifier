@@ -4,7 +4,8 @@ services:
     runtime: python
     plan: free
     buildCommand: "./build.sh"
-    startCommand: "cd finance_alert && gunicorn finance_alert.wsgi:application"
+    startCommand: "cd finance_alert && gunicorn finance_alert.wsgi:application --workers 1 --timeout 120"
+    healthCheckPath: /healthz
     envVars:
       - key: SECRET_KEY
         generateValue: true
@@ -20,6 +21,8 @@ services:
           property: connectionString
       - key: PYTHON_VERSION
         value: 3.13.3
+      - key: REMINDER_CRON_KEY
+        sync: false
       # Google Sheets API credentials
       - key: TYPE
         sync: false
@@ -67,7 +70,7 @@ services:
         sync: false
       # Django Sites framework
       - key: SITE_ID
-        value: 1
+        value: 3
 
 databases:
   - name: finance-alert-db

@@ -16,9 +16,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import JsonResponse
+
+
+def healthz(_request):
+    """Lightweight health check endpoint for Render."""
+    return JsonResponse({"ok": True})
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('notifier.urls')),
     path('users/', include('users.urls', namespace='users')),
+    path('healthz/', healthz),
 ]

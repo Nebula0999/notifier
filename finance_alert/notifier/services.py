@@ -1,11 +1,17 @@
 import os
 import json
 import gspread
-from typing import List
+import time
+from typing import List, Tuple, Optional
 
 # Lazy client so we don't import Django settings at module import time and avoid
 # circular imports between settings.py and this module.
-_GSPREAD_CLIENT: gspread.client.Client | None = None
+_GSPREAD_CLIENT: Optional[gspread.client.Client] = None
+
+# Simple in-process cache for sheet data to avoid expensive calls on every
+# request (e.g., Render health checks). TTL can be tuned via env.
+_CACHE: dict[Tuple[str, Optional[str], Tuple[str, ...]], tuple[float, list[dict]]] = {}
+_CACHE_TTL_SECONDS = int(os.getenv("SHEETS_CACHE_TTL", "300"))  # default 5 minutes
 
 def _build_credentials_dict() -> dict:
   """
@@ -58,16 +64,33 @@ def get_all_rows(doc_name: str, sheet_name: str = None, expected_headers: List[s
     sheet_name: Name of the worksheet tab (optional, defaults to first sheet)
     expected_headers: List of expected column headers to handle duplicates (optional)
   """
-  client = _get_gspread_client()
-  sh = client.open(doc_name)
-  if sheet_name:
-    # Correct use of the worksheet accessor (it's a method, not subscriptable)
-    worksheet = sh.worksheet(sheet_name)
-  else:
-    worksheet = sh.get_worksheet(0)
-  
-  # If expected headers provided, use them to handle duplicates
-  if expected_headers:
-    return worksheet.get_all_records(expected_headers=expected_headers)
-  else:
-    return worksheet.get_all_records()
+  # Check cache first
+  cache_key = (doc_name, sheet_name, tuple(expected_headers) if expected_headers else tuple())
+  now = time.time()
+  cached = _CACHE.get(cache_key)
+  if cached and (now - cached[0]) < _CACHE_TTL_SECONDS:
+    return cached[1]
+
+  try:
+    client = _get_gspread_client()
+    sh = client.open(doc_name)
+    if sheet_name:
+      # Correct use of the worksheet accessor (it's a method, not subscriptable)
+      worksheet = sh.worksheet(sheet_name)
+    else:
+      worksheet = sh.get_worksheet(0)
+
+    # If expected headers provided, use them to handle duplicates
+    rows = (
+      worksheet.get_all_records(expected_headers=expected_headers)
+      if expected_headers else
+      worksheet.get_all_records()
+    )
+    # Update cache on success
+    _CACHE[cache_key] = (now, rows)
+    return rows
+  except Exception:
+    # On failure, serve stale cache if available; otherwise, return empty list
+    if cached:
+      return cached[1]
+    return []

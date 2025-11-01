@@ -31,6 +31,17 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
+# Trust the Render proxy to mark HTTPS correctly so Django doesn't loop redirects
+if os.getenv('ENVIRONMENT') == 'production':
+    # Render sets X-Forwarded-Proto: https when requests arrive via TLS
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+    # Optional: allow configuring CSRF trusted origins via env (comma-separated)
+    # Example: CSRF_TRUSTED_ORIGINS=https://notifier-dpvz.onrender.com
+    _csrf_origins = os.getenv('CSRF_TRUSTED_ORIGINS', '')
+    if _csrf_origins:
+        CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_origins.split(',') if o.strip()]
+
 
 # Application definition
 
